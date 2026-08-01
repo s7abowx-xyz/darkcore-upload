@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>رفع - QuAx · NovaCore</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@700;900&family=Cairo:wght@400;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#070c10; --surface:#0c151b; --surface-2:#0f1b22; --line:#173039;
+  --teal:#25e6c8; --teal-dim:#0f4a45; --text:#e7f3f1; --muted:#6f8b89;
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+html,body{height:100%;}
+body{
+  background:var(--bg); color:var(--text); font-family:'Cairo', sans-serif;
+  min-height:100vh; display:flex; align-items:center; justify-content:center;
+  padding:32px 16px; position:relative; overflow-x:hidden;
+}
+body::before{
+  content:""; position:fixed; inset:0;
+  background-image:linear-gradient(var(--line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--line) 1px, transparent 1px);
+  background-size:42px 42px; opacity:.18;
+  mask-image:radial-gradient(circle at 50% 35%, black, transparent 75%); z-index:0;
+}
+body::after{
+  content:""; position:fixed; inset:0;
+  background:radial-gradient(circle at 50% 20%, rgba(37,230,200,.10), transparent 60%); z-index:0;
+}
+.card{
+  position:relative; z-index:1; width:100%; max-width:400px;
+  background:var(--surface); border:1px solid var(--line); border-radius:18px;
+  padding:28px 24px 26px; box-shadow:0 0 0 1px rgba(37,230,200,.05), 0 30px 60px -20px rgba(0,0,0,.7);
+}
+.card::before,.card::after{
+  content:""; position:absolute; width:14px; height:14px;
+  border-top:2px solid var(--teal); border-right:2px solid var(--teal);
+  top:-1px; right:-1px; border-radius:0 18px 0 0; opacity:.9;
+}
+.card::after{
+  top:auto; right:auto; bottom:-1px; left:-1px; border-top:none; border-right:none;
+  border-bottom:2px solid var(--teal); border-left:2px solid var(--teal); border-radius:0 0 0 18px;
+}
+.topbar{display:flex; align-items:center; justify-content:space-between; margin-bottom:18px;}
+.back{font-family:'JetBrains Mono', monospace; font-size:12px; color:var(--muted); text-decoration:none;}
+.back:hover{color:var(--teal);}
+.status{display:flex; align-items:center; gap:6px; font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--muted);}
+.dot{width:7px; height:7px; border-radius:50%; background:var(--teal); box-shadow:0 0 8px var(--teal); animation:pulse 2s ease-in-out infinite;}
+@keyframes pulse{0%,100%{opacity:1;} 50%{opacity:.4;}}
+.brand{display:flex; align-items:center; gap:12px; margin-bottom:20px;}
+.brand-mark{
+  width:42px; height:42px; border-radius:12px;
+  background:linear-gradient(145deg, var(--teal-dim), var(--surface-2));
+  border:1px solid var(--line); display:flex; align-items:center; justify-content:center;
+  color:var(--teal); font-weight:700; font-size:18px; flex-shrink:0;
+}
+.brand h1{font-family:'Tajawal', sans-serif; font-weight:900; font-size:20px;}
+.brand h1 span{display:block; font-family:'JetBrains Mono', monospace; font-weight:500; font-size:11px; color:var(--teal); letter-spacing:.08em; margin-top:2px;}
+
+.drop{
+  border:2px dashed var(--line); border-radius:12px; padding:28px 16px;
+  text-align:center; cursor:pointer; transition:border-color .2s ease, background .2s ease;
+  margin-bottom:14px;
+}
+.drop.drag{border-color:var(--teal); background:rgba(37,230,200,.06);}
+.drop .ic{font-size:26px; margin-bottom:8px;}
+.drop p{font-size:12.5px; color:var(--muted);}
+.drop input{display:none;}
+
+.file-info{
+  display:none; align-items:center; gap:10px; background:var(--surface-2);
+  border:1px solid var(--line); border-radius:10px; padding:10px 12px; margin-bottom:14px;
+  font-size:12.5px;
+}
+.file-info span{flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+
+.upload-btn{
+  width:100%; background:var(--teal); color:#04201c; border:none; border-radius:10px;
+  font-weight:700; font-size:14px; padding:13px; cursor:pointer;
+}
+.upload-btn:disabled{opacity:.6;}
+
+.progress{
+  height:6px; background:var(--surface-2); border-radius:4px; overflow:hidden; margin-top:10px; display:none;
+}
+.progress div{height:100%; width:0%; background:var(--teal); transition:width .2s ease;}
+
+.result{
+  margin-top:16px; display:none;
+}
+.result-row{
+  display:flex; align-items:center; gap:8px; background:var(--surface-2);
+  border:1px solid var(--line); border-radius:8px; padding:10px 10px; margin-bottom:8px;
+}
+.result-row code{
+  flex:1; font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--text);
+  overflow-x:auto; white-space:nowrap; direction:ltr; text-align:left;
+}
+.copy-btn{
+  flex-shrink:0; background:var(--teal-dim); border:1px solid var(--teal); color:var(--teal);
+  font-weight:600; font-size:11.5px; padding:6px 10px; border-radius:6px; cursor:pointer;
+}
+.copy-btn.copied{background:var(--teal); color:#04201c;}
+.preview{width:100%; border-radius:10px; margin-bottom:10px; display:none; max-height:220px; object-fit:cover;}
+
+.status-msg{font-family:'JetBrains Mono', monospace; font-size:12px; color:var(--muted); margin-top:10px; text-align:center;}
+.footer{margin-top:20px; text-align:center; font-family:'JetBrains Mono', monospace; font-size:10.5px; color:var(--muted);}
+.footer b{color:var(--teal); font-weight:500;}
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="topbar">
+      <a href="index.html" class="back">→ رجوع</a>
+      <span class="status"><span class="dot"></span> متصل</span>
+    </div>
+
+    <div class="brand">
+      <div class="brand-mark">🅚</div>
+      <h1>رفع عبر QuAx
+        <span>VIA QUAX</span>
+      </h1>
+    </div>
+
+    <div class="drop" id="drop">
+      <div class="ic">📤</div>
+      <p>دوس هنا أو اسحب الملف (صورة / فيديو / أي ملف)</p>
+      <input type="file" id="fileInput">
+    </div>
+
+    <div class="file-info" id="fileInfo">
+      <span id="fileName"></span>
+    </div>
+
+    <button class="upload-btn" id="uploadBtn" disabled>ارفع الملف</button>
+    <div class="progress" id="progress"><div id="progressBar"></div></div>
+    <div class="status-msg" id="statusMsg"></div>
+
+    <div class="result" id="result">
+      <img class="preview" id="preview">
+      <div class="result-row">
+        <code id="resultUrl"></code>
+        <button class="copy-btn" id="copyBtn">نسخ الرابط</button>
+      </div>
+    </div>
+
+    <div class="footer">© 2026 NovaCore &nbsp;·&nbsp; بنيت بواسطة <b>Hema</b></div>
+  </div>
+
+<script>
+  const drop = document.getElementById('drop');
+  const fileInput = document.getElementById('fileInput');
+  const fileInfo = document.getElementById('fileInfo');
+  const fileName = document.getElementById('fileName');
+  const uploadBtn = document.getElementById('uploadBtn');
+  const progress = document.getElementById('progress');
+  const progressBar = document.getElementById('progressBar');
+  const statusMsg = document.getElementById('statusMsg');
+  const result = document.getElementById('result');
+  const resultUrl = document.getElementById('resultUrl');
+  const preview = document.getElementById('preview');
+  const copyBtn = document.getElementById('copyBtn');
+
+  let selectedFile = null;
+
+  drop.addEventListener('click', () => fileInput.click());
+  drop.addEventListener('dragover', (e) => { e.preventDefault(); drop.classList.add('drag'); });
+  drop.addEventListener('dragleave', () => drop.classList.remove('drag'));
+  drop.addEventListener('drop', (e) => {
+    e.preventDefault();
+    drop.classList.remove('drag');
+    if (e.dataTransfer.files.length) setFile(e.dataTransfer.files[0]);
+  });
+  fileInput.addEventListener('change', () => {
+    if (fileInput.files.length) setFile(fileInput.files[0]);
+  });
+
+  function setFile(file) {
+    selectedFile = file;
+    fileInfo.style.display = 'flex';
+    fileName.textContent = file.name + ' (' + (file.size / 1024 / 1024).toFixed(2) + ' MB)';
+    uploadBtn.disabled = false;
+    result.style.display = 'none';
+    statusMsg.textContent = '';
+  }
+
+  uploadBtn.addEventListener('click', async () => {
+    if (!selectedFile) return;
+
+    uploadBtn.disabled = true;
+    progress.style.display = 'block';
+    progressBar.style.width = '30%';
+    statusMsg.textContent = 'جاري الرفع...';
+    result.style.display = 'none';
+
+    const formData = new FormData();
+    formData.append('file', selectedFile);
+
+    try {
+      const res = await fetch('/api/upload-quax', { method: 'POST', body: formData });
+      progressBar.style.width = '80%';
+      const data = await res.json();
+
+      if (data.status) {
+        progressBar.style.width = '100%';
+        statusMsg.textContent = 'تم الرفع بنجاح ✓';
+        resultUrl.textContent = data.url;
+        result.style.display = 'block';
+
+        if (selectedFile.type.startsWith('image/')) {
+          preview.src = data.url;
+          preview.style.display = 'block';
+        } else {
+          preview.style.display = 'none';
+        }
+      } else {
+        statusMsg.textContent = 'خطأ: ' + (data.message || 'فشل الرفع');
+      }
+    } catch (e) {
+      statusMsg.textContent = 'تعذر الاتصال بالخادم';
+    } finally {
+      uploadBtn.disabled = false;
+      setTimeout(() => { progress.style.display = 'none'; progressBar.style.width = '0%'; }, 800);
+    }
+  });
+
+  copyBtn.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(resultUrl.textContent);
+    } catch (e) {
+      const ta = document.createElement('textarea');
+      ta.value = resultUrl.textContent;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+    }
+    copyBtn.textContent = 'تم النسخ ✓';
+    copyBtn.classList.add('copied');
+    setTimeout(() => { copyBtn.textContent = 'نسخ الرابط'; copyBtn.classList.remove('copied'); }, 1600);
+  });
+</script>
+</body>
+</html>
